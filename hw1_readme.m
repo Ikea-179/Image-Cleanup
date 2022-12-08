@@ -1,0 +1,152 @@
+% CS 207 HW 1
+% Nov 08, 2022
+% Name: Yijia Xue
+% NetID: yx179
+% Email: yx179@duke.edu
+
+% Note: The directory structure should be the same as the following:
+% > project_dir
+%       > Images
+%       > output
+%       src_file1.m
+%       src_file2.m
+%       . . .
+
+% Where project_dir contains all source files, and /Images contains 
+% images to be read, all the output images will stored in the output folder
+% Also, I add notes in most of the m file to help you better understand
+% what I am writing.
+
+%% Problem1:Getting Started (35%)
+%% 1.1 Making Gray-Scale Image from Color Image
+%Input: dku building color image
+%Output: dku building gray image
+image_to_grayscale("building2_color.raw");
+\
+%% 1.2 Embedding Watermarks into Original Image
+%Input: dku logo color image, dku building color image
+%Output: colorful dku building with dku color logo center embeded
+centerwatermark_in_image("building2_color.raw", "dku_logo_color.raw", true);
+%Input: dku logo color image, dku building color image
+%Output: gray dku building with dku grey logo center embeded
+centerwatermark_in_image("building2_color.raw", "dku_logo_gray.raw", false);
+
+%% 1.3 Generating Negative from Color Image
+%Input: girls image and girls negative image
+%Output: The color histogoram of girls image, girls negative image, and
+%negative girls image after applying the negative image generation method
+%This line of code is to find the relationship between girls.raw and
+%girlsn.raw and verify my method is correct
+Generate_negative_image("girls.raw",false,"girlsn.raw")
+
+%Input: F-16 image
+%Output: generated negative F-16 image & Color histogram of F-16 and generated negative F-16 image
+Generate_negative_image("F-16.raw",true,"none")
+
+%% Problem 2: Image Enhancement (30%)
+%% 2.1.1 Rose Dark full range linear scaling method
+%Input: rose dark image
+%Output: rose dark image after applying full range linear scaling method &
+%The linear transformation function & The histogram of original and output
+%image
+full_linear_scale("rose_dark.raw");
+
+%% 2.1.2 Rose Middle full range linear scaling method
+%Input: rose middle image
+%Output: rose middle image after applying full range linear scaling method &
+%The linear transformation function & The histogram of original and output
+%image
+full_linear_scale("rose_mid.raw");
+
+%% 2.1.3 Rose Bright full range linear scaling method
+%Input: rose bright image
+%Output: rose bright image after applying full range linear scaling method &
+%The linear transformation function & The histogram of original and output
+%image
+full_linear_scale("rose_bright.raw");
+
+%% 2.2.1 Rose Dark histogram equalization method
+%Input: rose dark image
+%Output: rose dark image after applying histogram equalization method &
+%The transfer function & The histogram of original and output image
+histogram_equalize("rose_dark.raw",true);
+
+%% 2.2.2 Rose Middle histogram equalization method
+%Input: rose middle image
+%Output: rose middle image after applying histogram equalization method &
+%The transfer function & The histogram of original and output image
+histogram_equalize("rose_mid.raw",true);
+
+%% 2.2.3 Rose Bright histogram equalization method
+%Input: rose bright image
+%Output: rose bright image after applying histogram equalization method &
+%The transfer function & The histogram of original and output image
+histogram_equalize("rose_bright.raw",true);
+
+%% 3 Noise removal 
+mask1 = [1/9,1/9,1/9;1/9,1/9,1/9;1/9,1/9,1/9]
+mask2 = [1/16,2/16,1/16;2/16,4/16,2/16;1/16,2/16,1/16];
+%% 3.1.1 Gray-level image Uniform noise removal
+%Input: rose image with uniform noise & different masks
+%Output: generated denoising rose_uni image
+mask = [1/16,2/16,1/16;2/16,4/16,2/16;1/16,2/16,1/16];
+uni_without = linear_noise_removal("rose_uni.raw", mask);
+
+%% 3.1.2 Gray-level image Gaussian noise removal
+%Input: rose image with gaussian noise & different masks
+%Output: generated denoising rose_gau image
+mask = [1/16,2/16,1/16;2/16,4/16,2/16;1/16,2/16,1/16];
+gau_without = linear_noise_removal("rose_gau.raw", mask);
+
+%% 3.1.3 Color image mixed noises removal
+%% 5*5 mask with nonlinear window size5
+% The process speed of below method will be slow.
+% Please wait a moment for the output generation
+%Input: color rose image with noise & different masks(5*5)linear mask and
+%window size 5 pseudomedian filter
+%Output: generated 3 denoising rose_color image after 3 stages
+disp("Running noise removal on color...");
+colorNoise = readraw_color("Images/rose_color_noise.raw");
+rose = readraw_color("Images/rose_color.raw");
+figure('Name', "colorNoise", "NumberTitle", "off");
+imshow(colorNoise);
+blurredMedian = gaussBlur5x5(colorNoise);
+medianed = applyMedianFilter(blurredMedian, 5);
+medianed2 = applyMedianFilter(medianed, 5);
+figure('Name', "5blurredMedian", "NumberTitle", "off");
+imshow(blurredMedian);
+figure('Name', "5medianed", "NumberTitle", "off");
+imshow(medianed);
+figure('Name', "5medianed2", "NumberTitle", "off");
+imshow(medianed2);
+writeraw_color(medianed2, "output/output_rose_color_noise_removed_5.raw");
+blurredMedian_mse = xyj_mse(blurredMedian,rose,true);
+medianed_mse  = xyj_mse(medianed,rose,true);
+medianed2_mse  = xyj_mse(medianed2,rose,true);
+disp(blurredMedian_mse);disp(medianed_mse);disp(medianed2_mse);
+
+%%  7*7 mask with nonlinear window size7
+%Input: color rose image with noise & different masks(7*7)linear mask and
+%window size 7 pseudomedian filter
+%Output: generated 3 denoising rose_color image after 3 stages
+colorNoise = readraw_color("Images/rose_color_noise.raw");
+rose = readraw_color("Images/rose_color.raw");
+figure('Name', "colorNoise", "NumberTitle", "off");
+imshow(colorNoise);
+blurredMedian = gaussBlur7x7(colorNoise);
+medianed = applyMedianFilter(blurredMedian, 7);
+medianed2 = applyMedianFilter(medianed, 7);
+figure('Name', "7blurredMedian", "NumberTitle", "off");
+imshow(blurredMedian);
+figure('Name', "7medianed", "NumberTitle", "off");
+imshow(medianed);
+figure('Name', "7medianed2", "NumberTitle", "off");
+imshow(medianed2);
+writeraw_color(medianed2, "output/output_rose_color_noise_removed_7.raw");
+blurredMedian_mse = xyj_mse(blurredMedian,rose,true);
+medianed_mse  = xyj_mse(medianed,rose,true);
+medianed2_mse  = xyj_mse(medianed2,rose,true);
+disp(blurredMedian_mse);disp(medianed_mse);disp(medianed2_mse);
+
+
+
